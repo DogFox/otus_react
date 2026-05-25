@@ -1,16 +1,16 @@
 /**
  * Нужно превратить файл в ts и указать типы аргументов и типы возвращаемого значения
  * */
-export const removePlus = (string: string) => string.replace(/^\+/, '');
+export const removePlus = (string: string): string => string.replace(/^\+/, '');
 
-export const addPlus = (string: string) => `+${string}`;
+export const addPlus = (string: string): string => `+${string}`;
 
-export const removeFirstZeros = (value: string) => value.replace(/^(-)?[0]+(-?\d+.*)$/, '$1$2');
+export const removeFirstZeros = (value: string): string => value.replace(/^(-)?[0]+(-?\d+.*)$/, '$1$2');
 
-export const getBeautifulNumber = (value: string, separator = ' ') =>
+export const getBeautifulNumber = (value: string, separator = ' '): string =>
   value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 
-export const round = (value: number, accuracy = 2) => {
+export const round = (value: number, accuracy = 2): number => {
   const d = 10 ** accuracy;
   return Math.round(value * d) / d;
 };
@@ -18,7 +18,7 @@ export const round = (value: number, accuracy = 2) => {
 const transformRegexp =
   /(matrix\(-?\d+(\.\d+)?, -?\d+(\.\d+)?, -?\d+(\.\d+)?, -?\d+(\.\d+)?, )(-?\d+(\.\d+)?), (-?\d+(\.\d+)?)\)/;
 
-export const getTransformFromCss = (transformCssString: string) => {
+export const getTransformFromCss = (transformCssString: string): { x: number; y: number } => {
   const data = transformCssString.match(transformRegexp);
   if (!data) return { x: 0, y: 0 };
   return {
@@ -27,20 +27,20 @@ export const getTransformFromCss = (transformCssString: string) => {
   };
 };
 
-export const getColorContrastValue = ([red, green, blue]: [number, number, number]) =>
+export const getColorContrastValue = ([red, green, blue]: [number, number, number]): number =>
   // http://www.w3.org/TR/AERT#color-contrast
   Math.round((red * 299 + green * 587 + blue * 114) / 1000);
 
-export const getContrastType = (contrastValue: number) => (contrastValue > 125 ? 'black' : 'white');
+export const getContrastType = (contrastValue: number): string => (contrastValue > 125 ? 'black' : 'white');
 
 export const shortColorRegExp = /^#[0-9a-f]{3}$/i;
 export const longColorRegExp = /^#[0-9a-f]{6}$/i;
 
-export const checkColor = (color: string) => {
+export const checkColor = (color: string): boolean | void => {
   if (!longColorRegExp.test(color) && !shortColorRegExp.test(color)) throw new Error(`invalid hex color: ${color}`);
 };
 
-export const hex2rgb = (color: string) => {
+export const hex2rgb = (color: string): number[] => {
   checkColor(color);
   if (shortColorRegExp.test(color)) {
     const red = parseInt(color.substring(1, 2), 16);
@@ -54,11 +54,32 @@ export const hex2rgb = (color: string) => {
   return [red, green, blue];
 };
 
-export const getNumberedArray = (arr: number[]) => arr.map((value: number, number: number) => ({ value, number }));
-export const toStringArray = (arr: unknown[]) => arr.map(({ value, number }: { value: unknown, number: number }) => `${value}_${number}`);
+export const getNumberedArray = (
+  arr: number[]
+): {
+  value: number;
+  number: number;
+}[] => arr.map((value: number, number: number) => ({ value, number }));
 
-export const transformCustomers = (customers: { id: number, name: string, age: number, isSubscribed: boolean }[]) => {
-  return customers.reduce((acc: { [key: number]: { name: string, age: number, isSubscribed: boolean } }, customer: { id: number, name: string, age: number, isSubscribed: boolean }) => {
+export const toStringArray = <T>(arr: { value: T; number: number }[]): string[] =>
+  arr.map(({ value, number }) => `${value}_${number}`);
+
+export type Customer = CustomerBase & {
+  id: number;
+};
+
+export type CustomerBase = {
+  name: string;
+  age: number;
+  isSubscribed: boolean;
+};
+
+export const transformCustomers = (
+  customers: Customer[]
+): {
+  [key: number]: CustomerBase;
+} => {
+  return customers.reduce((acc: { [key: number]: CustomerBase }, customer: Customer) => {
     acc[customer.id] = { name: customer.name, age: customer.age, isSubscribed: customer.isSubscribed };
     return acc;
   }, {});
