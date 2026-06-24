@@ -1,0 +1,23 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.logo__mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #dbeafe, #93c5fd);
+  border: 1px solid #c7d2fe;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.18);
+}
+
+.logo__text {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #1f2a37;
+  font-size: 13px;
+}
+
