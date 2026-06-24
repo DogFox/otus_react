@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
-import { AddToCartButton } from './AddToCartButton';
+import { AddToCartButton } from '../shared/ui/AddToCartButton/AddToCartButton';
 
 const meta: Meta<typeof AddToCartButton> = {
   title: 'shared/AddToCartButton',

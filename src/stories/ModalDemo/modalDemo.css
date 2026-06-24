@@ -1,0 +1,21 @@
+.modal-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+  padding: 24px;
+}
+
+.modal-demo__input {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: 16px;
+  padding: 10px 14px;
+}
+
+.modal-demo__input:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}

@@ -1,18 +1,32 @@
 import React from 'react';
-import logo from './logo.svg';
+import { useTranslation } from 'react-i18next';
+import { LangProvider } from './providers/LangProvider/LangProvider';
+import { ThemeProvider } from './providers/ThemeProvider/ThemeProvider';
+import './styles/themes.css';
 import './App.css';
+import { Header } from '../shared/ui/Header/Header';
 
 function App() {
+  const { t } = useTranslation();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Ознакомиться с React.
-        </p>
-      </header>
+      <Header title="Homework 6" />
+      <main className="App-main">
+        <p>{t('welcome')}</p>
+      </main>
     </div>
   );
 }
 
-export default App;
+function AppWithProviders() {
+  return (
+    <ThemeProvider>
+      <LangProvider>
+        <App />
+      </LangProvider>
+    </ThemeProvider>
+  );
+}
+
+export default AppWithProviders;
