@@ -2,9 +2,9 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(248, 250, 252, 0.92);
+  background: color-mix(in srgb, var(--color-header-bg, rgba(248, 250, 252, 0.92)) 92%, transparent);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
 }
 
 .header__inner {
@@ -13,11 +13,28 @@
   padding: 12px 16px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 14px;
+}
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
 }
 
 .header__title {
   font-weight: 600;
-  color: #334155;
+  color: var(--color-text-secondary, #334155);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
