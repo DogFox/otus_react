@@ -1,4 +1,5 @@
 import React, { type FC, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import './modal.css';
 
 export interface ModalProps {
@@ -8,24 +9,37 @@ export interface ModalProps {
   onClose?: () => void;
 }
 
-export const Modal: FC<ModalProps> = ({ visible, children, title, onClose }) => {
-  if (!visible) return null;
+export const Modal: FC<ModalProps> = ({
+  visible,
+  children,
+  title,
+  onClose,
+}) => {
+  if (!visible) {
+    return null;
+  }
 
-  return (
-    <div className="modal__overlay" role="presentation" onClick={onClose}>
+  return createPortal(
+    <div className="modal__overlay" onClick={onClose}>
       <div
-        className="modal__dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
+        className={`modal__dialog modal__dialog--card`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button className="modal__close" type="button" aria-label="Закрыть" onClick={onClose} disabled={!onClose}>
+        <button
+          className="modal__close"
+          type="button"
+          onClick={onClose}
+        >
           ×
         </button>
+
         {title && <h2 className="modal__title">{title}</h2>}
-        <div className="modal__content">{children}</div>
+
+        <div className={`modal__content modal__content--card`}>
+          {children}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

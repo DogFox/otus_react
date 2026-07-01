@@ -55,3 +55,14 @@
   color: var(--color-text, #1f2a37);
 }
 
+.modal__dialog--card {
+  aspect-ratio: auto;
+  max-height: min(90vh, 640px);
+  width: min(420px, 100%);
+}
+
+.modal__content--card {
+  overflow: auto;
+  padding: 48px 12px 12px;
+}
+
