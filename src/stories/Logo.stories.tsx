@@ -14,4 +14,3 @@ export default meta;
 type Story = StoryObj<typeof Logo>;
 
 export const Playground: Story = {};
-

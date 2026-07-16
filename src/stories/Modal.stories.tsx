@@ -10,9 +10,7 @@ const meta: Meta<typeof Modal> = {
     children: (
       <div>
         <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Заголовок</div>
-        <div style={{ color: '#4b5563' }}>
-          Любой контент внутри модального окна (управляется пропсом children).
-        </div>
+        <div style={{ color: '#4b5563' }}>Любой контент внутри модального окна (управляется пропсом children).</div>
       </div>
     ),
   },
@@ -31,4 +29,3 @@ export const Hidden: Story = {
     visible: false,
   },
 };
-

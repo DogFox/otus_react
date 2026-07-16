@@ -21,4 +21,3 @@ export const CartItem: FC<CartItemProps> = ({ title, subtitle }) => {
     </div>
   );
 };
-
