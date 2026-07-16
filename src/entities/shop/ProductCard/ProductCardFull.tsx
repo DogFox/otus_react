@@ -1,5 +1,6 @@
 import React, { type FC } from 'react';
 import { AddToCartButton } from '../../../shared/ui/AddToCartButton/AddToCartButton';
+import { useCart } from '../lib/CartContext';
 import './productCard.css';
 
 export interface ProductCardFullProps {
@@ -8,7 +9,7 @@ export interface ProductCardFullProps {
   category: string;
   title: string;
   description: string;
-  cartCount: number;
+  product: { id: string };
 }
 
 export const ProductCardFull: FC<ProductCardFullProps> = ({
@@ -17,8 +18,19 @@ export const ProductCardFull: FC<ProductCardFullProps> = ({
   category,
   title,
   description,
-  cartCount,
+  product,
 }) => {
+  const { getQuantity, addItem, removeItem } = useCart();
+  const cartCount = getQuantity(product.id);
+
+  const handleAddToCart = () => {
+    addItem(product);
+  };
+
+  const handleRemoveFromCart = () => {
+    removeItem(product.id);
+  };
+
   return (
     <div className="productCard">
       <div className="productCard__media">
@@ -37,10 +49,9 @@ export const ProductCardFull: FC<ProductCardFullProps> = ({
         <div className="productCard__title">{title}</div>
         <div className="productCard__desc">{description}</div>
         <div className="productCard__footer">
-          <AddToCartButton count={cartCount} />
+          <AddToCartButton value={cartCount} onAdd={handleAddToCart} onRemove={handleRemoveFromCart} />
         </div>
       </div>
     </div>
   );
 };
-

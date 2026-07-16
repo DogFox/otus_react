@@ -9,7 +9,7 @@ export function mapProductToShortProps(product: Product): ProductCardShortProps 
     imageUrl: product.photo,
     title: product.name,
     description: product.desc ?? '',
-    cartCount: 0,
+    product: { id: product.id },
   };
 }
 

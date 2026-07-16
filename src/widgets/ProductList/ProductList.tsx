@@ -1,11 +1,8 @@
 import React, { type FC } from 'react';
-import type { Product } from '../../homeworks/ts1/3_write';
+import type { Product } from '../../../homeworks/ts1/3_write';
 import { ProductCardFull } from '../../entities/shop/ProductCard/ProductCardFull';
 import { ProductCardShort } from '../../entities/shop/ProductCard/ProductCardShort';
-import {
-  mapProductToFullProps,
-  mapProductToShortProps,
-} from '../../entities/shop/lib/mapProductToCard';
+import { mapProductToFullProps, mapProductToShortProps } from '../../entities/shop/lib/mapProductToCard';
 import './productList.css';
 
 export type ProductListVariant = 'short' | 'full';
