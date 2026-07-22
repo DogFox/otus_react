@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState, type FC } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo, useState, type FC } from 'react';
 import type { Product } from '../../homeworks/ts1/3_write';
 import { createRandomProduct } from '../../homeworks/ts1/3_write';
 import { ProductCardFull } from '../../entities/shop/ProductCard/ProductCardFull';
-import { mapProductToFullProps } from '../../entities/shop/lib/mapProductToCard';
+import { mapProductToFullProps, mapProductToShortProps } from '../../entities/shop/lib/mapProductToCard';
 import { Modal } from '../../shared/ui/Modal/Modal';
 import { useIntersectionObserver } from '../../shared/hooks/useIntersectionObserver';
 import { ProductList, type ProductListProps } from './ProductList';
@@ -33,12 +33,21 @@ export const InfiniteProductList: FC<Omit<ProductListProps, 'items'>> = ({ varia
 
   const sentinelRef = useIntersectionObserver({ onIntersect: loadMore, watchKey: items.length });
 
+  const selectedProductMap = useMemo(() => {
+    if (!selectedProduct) {
+      return null;
+    }
+    return {
+      fullProps: mapProductToFullProps(selectedProduct),
+    };
+  }, [selectedProduct]);
+
   return (
     <div className="productList__wrapper">
       <ProductList items={items} variant={variant} onProductClick={setSelectedProduct} />
       <div ref={sentinelRef} className="productList__sentinel" aria-hidden="true" />
       <Modal visible={selectedProduct !== null} onClose={() => setSelectedProduct(null)}>
-        {selectedProduct && <ProductCardFull {...mapProductToFullProps(selectedProduct)} />}
+        {selectedProduct && selectedProductMap && <ProductCardFull {...selectedProductMap.fullProps} />}
       </Modal>
     </div>
   );

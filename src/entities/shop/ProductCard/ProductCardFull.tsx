@@ -20,8 +20,8 @@ export const ProductCardFull: FC<ProductCardFullProps> = ({
   description,
   product,
 }) => {
-  const { getQuantity, addItem, removeItem } = useCart();
-  const cartCount = getQuantity(product.id);
+  const { getQuantityFromMap, addItem, removeItem } = useCart();
+  const cartCount = getQuantityFromMap(product.id);
 
   const handleAddToCart = () => {
     addItem(product);

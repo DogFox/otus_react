@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import type { Product } from '../../../homeworks/ts1/3_write';
 
 export interface CartItem {
@@ -12,6 +12,7 @@ interface CartContextType {
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   getQuantity: (productId: string) => number;
+  getQuantityFromMap: (productId: string) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -27,11 +28,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
+        return prev.map((item) => (item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
       }
       return [...prev, { product, quantity: 1 }];
     });
@@ -42,16 +39,22 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
+    setCartItems((prev) => prev.map((item) => (item.product.id === productId ? { ...item, quantity } : item)));
   };
 
   const getQuantity = (productId: string): number => {
     const item = cartItems.find((cartItem) => cartItem.product.id === productId);
     return item ? item.quantity : 0;
+  };
+
+  const quantityMap = useMemo(() => {
+    const map = new Map<string, number>();
+    cartItems.forEach((item) => map.set(item.product.id, item.quantity));
+    return map;
+  }, [cartItems]);
+
+  const getQuantityFromMap = (productId: string): number => {
+    return quantityMap.get(productId) ?? 0;
   };
 
   return (
@@ -62,6 +65,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         removeItem,
         updateQuantity,
         getQuantity,
+        getQuantityFromMap,
       }}
     >
       {children}

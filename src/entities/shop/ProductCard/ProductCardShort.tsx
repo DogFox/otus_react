@@ -12,8 +12,8 @@ export interface ProductCardShortProps {
 }
 
 export const ProductCardShort: FC<ProductCardShortProps> = ({ price, imageUrl, title, description, product }) => {
-  const { getQuantity, addItem, removeItem } = useCart();
-  const cartCount = getQuantity(product.id);
+  const { getQuantityFromMap, addItem, removeItem } = useCart();
+  const cartCount = getQuantityFromMap(product.id);
 
   const handleAddToCart = () => {
     addItem(product);
