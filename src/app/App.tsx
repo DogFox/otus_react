@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LangProvider } from './providers/LangProvider/LangProvider';
 import { ThemeProvider } from './providers/ThemeProvider/ThemeProvider';
+import { CartProvider } from '../entities/shop/lib/CartContext';
 import './styles/themes.css';
 import './App.css';
 import { Header } from '../shared/ui/Header/Header';
@@ -28,7 +29,9 @@ function AppWithProviders() {
   return (
     <ThemeProvider>
       <LangProvider>
-        <App />
+        <CartProvider>
+          <App />
+        </CartProvider>
       </LangProvider>
     </ThemeProvider>
   );

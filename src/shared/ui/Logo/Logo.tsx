@@ -13,4 +13,3 @@ export const Logo: FC<LogoProps> = ({ text = 'DogFox' }) => {
     </div>
   );
 };
-

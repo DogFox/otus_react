@@ -20,4 +20,3 @@ export const Button: Story = {
 export const Stepper: Story = {
   args: { count: 2 },
 };
-

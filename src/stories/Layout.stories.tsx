@@ -27,4 +27,3 @@ export default meta;
 type Story = StoryObj<typeof Layout>;
 
 export const Playground: Story = {};
-

@@ -15,4 +15,3 @@ export const Layout: FC<LayoutProps> = ({ children, headerTitle }) => {
     </div>
   );
 };
-

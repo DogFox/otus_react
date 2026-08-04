@@ -33,4 +33,3 @@ export const Full: FullStory = {
     cartCount: 3,
   },
 };
-

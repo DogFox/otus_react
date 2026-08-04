@@ -1,4 +1,3 @@
-
 import { createRandomOperation, createRandomProduct } from './3_write';
 
 describe('all', () => {

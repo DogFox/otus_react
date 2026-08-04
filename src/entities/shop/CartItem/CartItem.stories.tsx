@@ -15,4 +15,3 @@ export default meta;
 type Story = StoryObj<typeof CartItem>;
 
 export const Playground: Story = {};
-

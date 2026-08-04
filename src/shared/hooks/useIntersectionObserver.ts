@@ -4,7 +4,7 @@ type UseIntersectionObserverOptions = {
   onIntersect: () => void;
   enabled?: boolean;
   rootMargin?: string;
-// колхозный способ отслеживанияю. Обзервер не трекает пересечение если спутник сразу виден, загружаем до полного сокрытия
+  // колхозный способ отслеживанияю. Обзервер не трекает пересечение если спутник сразу виден, загружаем до полного сокрытия
   watchKey?: unknown;
 };
 
@@ -36,7 +36,7 @@ export function useIntersectionObserver({
           onIntersectRef.current();
         }
       },
-      { rootMargin, threshold: 0 },
+      { rootMargin, threshold: 0 }
     );
 
     observer.observe(sentinel);
