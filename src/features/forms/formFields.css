@@ -1,0 +1,82 @@
+.formFieldInput,
+.formFieldTextarea {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font: inherit;
+  padding: 10px 12px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.formFieldInput:focus,
+.formFieldTextarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 167, 253, 0.15);
+  outline: none;
+}
+
+.formFieldInput:disabled,
+.formFieldTextarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.formFieldTextarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.formSubmit {
+  background: var(--color-primary);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  margin-top: 8px;
+  padding: 10px 16px;
+}
+
+.formSubmit:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.formRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.formConnected {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(420px, 100%);
+}
+
+.formModeSwitch {
+  display: flex;
+  gap: 8px;
+}
+
+.formModeButton {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  cursor: pointer;
+  flex: 1;
+  font: inherit;
+  padding: 8px 12px;
+}
+
+.formModeButton--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
