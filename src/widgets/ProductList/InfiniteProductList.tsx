@@ -2,13 +2,17 @@ import React, { useCallback, useEffect, useRef, useMemo, useState, type FC } fro
 import type { Product } from '../../homeworks/ts1/3_write';
 import { createRandomProduct } from '../../homeworks/ts1/3_write';
 import { ProductCardFull } from '../../entities/shop/ProductCard/ProductCardFull';
-import { mapProductToFullProps, mapProductToShortProps } from '../../entities/shop/lib/mapProductToCard';
+import { applyDiscount, getDiscountedPrice } from '../../entities/account/lib/pricing';
+import { getProductTypeFromCategoryName } from '../../entities/account/lib/productTypeFromCategoryName';
+import { useAccount } from '../../app/providers/AccountProvider/AccountProvider';
+import { mapProductToFullPropsWithPrice } from '../../entities/shop/lib/mapProductToCard';
 import { Modal } from '../../shared/ui/Modal/Modal';
 import { useIntersectionObserver } from '../../shared/hooks/useIntersectionObserver';
 import { ProductList, type ProductListProps } from './ProductList';
 import './productList.css';
 
 export const InfiniteProductList: FC<Omit<ProductListProps, 'items'>> = ({ variant = 'short' }) => {
+  const { accountService, userType } = useAccount();
   const createdAt = new Date().toISOString();
   const [items, setItems] = useState(Array.from({ length: 6 }, () => createRandomProduct(createdAt)));
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -37,10 +41,15 @@ export const InfiniteProductList: FC<Omit<ProductListProps, 'items'>> = ({ varia
     if (!selectedProduct) {
       return null;
     }
+
+    const productType = getProductTypeFromCategoryName(selectedProduct.category.name);
+    const generalDiscount = accountService.getGeneralDiscount(userType);
+    const price = productType ? getDiscountedPrice(selectedProduct.price, productType, accountService, userType) : applyDiscount(selectedProduct.price, generalDiscount);
+
     return {
-      fullProps: mapProductToFullProps(selectedProduct),
+      fullProps: mapProductToFullPropsWithPrice(selectedProduct, price),
     };
-  }, [selectedProduct]);
+  }, [accountService, selectedProduct, userType]);
 
   return (
     <div className="productList__wrapper">

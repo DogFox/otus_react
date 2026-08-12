@@ -13,9 +13,23 @@ export function mapProductToShortProps(product: Product): ProductCardShortProps 
   };
 }
 
+export function mapProductToShortPropsWithPrice(product: Product, price: number): ProductCardShortProps {
+  return {
+    ...mapProductToShortProps(product),
+    price: formatCurrency(price),
+  };
+}
+
 export function mapProductToFullProps(product: Product): ProductCardFullProps {
   return {
     ...mapProductToShortProps(product),
     category: product.category.name,
+  };
+}
+
+export function mapProductToFullPropsWithPrice(product: Product, price: number): ProductCardFullProps {
+  return {
+    ...mapProductToFullProps(product),
+    ...mapProductToShortPropsWithPrice(product, price),
   };
 }
