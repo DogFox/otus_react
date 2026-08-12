@@ -1,4 +1,4 @@
-import React, { type FC } from 'react';
+import React, { type FC, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Logo } from '../Logo/Logo';
 import { LangSwitcher } from '../../LangSwitcher/LangSwitcher';
@@ -7,9 +7,10 @@ import './header.css';
 
 export interface HeaderProps {
   title?: string;
+  actions?: ReactNode;
 }
 
-export const Header: FC<HeaderProps> = ({ title = 'Dashboard' }) => {
+export const Header: FC<HeaderProps> = ({ title = 'Dashboard', actions }) => {
   const { t } = useTranslation();
 
   return (
@@ -20,6 +21,7 @@ export const Header: FC<HeaderProps> = ({ title = 'Dashboard' }) => {
           <div className="header__title">{title}</div>
         </div>
         <div className="header__right">
+          {actions}
           <ThemeSwitcher />
           <LangSwitcher />
         </div>
