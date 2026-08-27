@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import type { Product } from '../homeworks/ts1/3_write';
 import { createRandomProduct } from '../homeworks/ts1/3_write';
 import { LangProvider } from './providers/LangProvider/LangProvider';
@@ -16,7 +17,11 @@ import { Modal } from '../shared/ui/Modal/Modal';
 import './styles/themes.css';
 import './App.css';
 
-type Screen = 'profile' | 'products' | 'cart';
+const APP_ROUTES = {
+  Cart: '/cart',
+  Products: '/products',
+  Profile: '/profile',
+} as const;
 
 const EDITOR_MODE = {
   Create: 'create',
@@ -44,7 +49,6 @@ const productToFormValues = (product: Product): ProductFormValues => ({
 
 function App() {
   const { userType, setUserType } = useAccount();
-  const [screen, setScreen] = useState<Screen>('products');
   const [products, setProducts] = useState<Product[]>(makeProducts);
   const [editor, setEditor] = useState<EditorState>(null);
 
@@ -91,27 +95,30 @@ function App() {
         title="Homework 8"
         navigation={
           <>
-            <button
-              className={`header__navButton ${screen === 'profile' ? 'header__navButton--active' : ''}`}
-              type="button"
-              onClick={() => setScreen('profile')}
+            <NavLink
+              className={({ isActive }) =>
+                `header__navButton ${isActive ? 'header__navButton--active' : ''}`
+              }
+              to={APP_ROUTES.Profile}
             >
               Profile
-            </button>
-            <button
-              className={`header__navButton ${screen === 'products' ? 'header__navButton--active' : ''}`}
-              type="button"
-              onClick={() => setScreen('products')}
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `header__navButton ${isActive ? 'header__navButton--active' : ''}`
+              }
+              to={APP_ROUTES.Products}
             >
               Products
-            </button>
-            <button
-              className={`header__navButton ${screen === 'cart' ? 'header__navButton--active' : ''}`}
-              type="button"
-              onClick={() => setScreen('cart')}
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `header__navButton ${isActive ? 'header__navButton--active' : ''}`
+              }
+              to={APP_ROUTES.Cart}
             >
               Cart
-            </button>
+            </NavLink>
             <label className="App-userTypeSelect">
               Тип пользователя:{' '}
               <select value={userType} onChange={(e) => setUserType(e.target.value as UserType)}>
@@ -125,15 +132,22 @@ function App() {
         }
       />
       <main className="App-main">
-        {screen === 'profile' ? <ProfilePage /> : null}
-        {screen === 'products' ? (
-          <ProductsPage
-            products={products}
-            onCreateProduct={() => setEditor({ mode: EDITOR_MODE.Create })}
-            onEditProduct={(product) => setEditor({ mode: EDITOR_MODE.Edit, item: product })}
+        <Routes>
+          <Route path="/" element={<Navigate to={APP_ROUTES.Products} replace />} />
+          <Route path={APP_ROUTES.Profile} element={<ProfilePage />} />
+          <Route
+            path={APP_ROUTES.Products}
+            element={
+              <ProductsPage
+                products={products}
+                onCreateProduct={() => setEditor({ mode: EDITOR_MODE.Create })}
+                onEditProduct={(product) => setEditor({ mode: EDITOR_MODE.Edit, item: product })}
+              />
+            }
           />
-        ) : null}
-        {screen === 'cart' ? <CartPage /> : null}
+          <Route path={APP_ROUTES.Cart} element={<CartPage />} />
+          <Route path="*" element={<Navigate to={APP_ROUTES.Products} replace />} />
+        </Routes>
       </main>
 
       <Modal visible={editor !== null} onClose={closeEditor} title={editorTitle}>
@@ -151,15 +165,17 @@ function App() {
 
 function AppWithProviders() {
   return (
-    <ThemeProvider>
-      <LangProvider>
-        <AccountProvider>
-          <CartProvider>
-            <App />
-          </CartProvider>
-        </AccountProvider>
-      </LangProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <ThemeProvider>
+        <LangProvider>
+          <AccountProvider>
+            <CartProvider>
+              <App />
+            </CartProvider>
+          </AccountProvider>
+        </LangProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
