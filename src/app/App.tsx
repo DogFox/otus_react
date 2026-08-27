@@ -17,7 +17,16 @@ import './styles/themes.css';
 import './App.css';
 
 type Screen = 'profile' | 'products' | 'cart';
-type EditorState = { mode: 'create' } | { mode: 'edit'; item: Product } | null;
+
+const EDITOR_MODE = {
+  Create: 'create',
+  Edit: 'edit',
+} as const;
+
+type EditorState =
+  | { mode: typeof EDITOR_MODE.Create }
+  | { mode: typeof EDITOR_MODE.Edit; item: Product }
+  | null;
 
 const makeProducts = (): Product[] => {
   const createdAt = new Date().toISOString();
@@ -42,12 +51,14 @@ function App() {
   const closeEditor = () => setEditor(null);
 
   const saveProduct = (values: ProductFormValues) => {
+    const isEditMode = editor?.mode === EDITOR_MODE.Edit;
+
     const nextProduct: Product = {
-      id: editor?.mode === 'edit' ? editor.item.id : `${Date.now()}`,
+      id: isEditMode ? editor.item.id : `${Date.now()}`,
       name: values.name,
       photo: values.photo,
       desc: values.desc,
-      createdAt: editor?.mode === 'edit' ? editor.item.createdAt : new Date().toISOString(),
+      createdAt: isEditMode ? editor.item.createdAt : new Date().toISOString(),
       oldPrice: values.oldPrice ? Number(values.oldPrice) : undefined,
       price: Number(values.price),
       category: {
@@ -57,7 +68,7 @@ function App() {
     };
 
     setProducts((currentProducts) => {
-      if (editor?.mode === 'edit') {
+      if (isEditMode) {
         return currentProducts.map((product) => (product.id === editor.item.id ? nextProduct : product));
       }
 
@@ -71,7 +82,7 @@ function App() {
       return '';
     }
 
-    return editor.mode === 'create' ? 'Create product' : 'Edit product';
+    return editor.mode === EDITOR_MODE.Create ? 'Create product' : 'Edit product';
   }, [editor]);
 
   return (
@@ -118,8 +129,8 @@ function App() {
         {screen === 'products' ? (
           <ProductsPage
             products={products}
-            onCreateProduct={() => setEditor({ mode: 'create' })}
-            onEditProduct={(product) => setEditor({ mode: 'edit', item: product })}
+            onCreateProduct={() => setEditor({ mode: EDITOR_MODE.Create })}
+            onEditProduct={(product) => setEditor({ mode: EDITOR_MODE.Edit, item: product })}
           />
         ) : null}
         {screen === 'cart' ? <CartPage /> : null}
@@ -128,7 +139,7 @@ function App() {
       <Modal visible={editor !== null} onClose={closeEditor} title={editorTitle}>
         {editor ? (
           <ProductFormConnected
-            initialValues={editor.mode === 'edit' ? productToFormValues(editor.item) : undefined}
+            initialValues={editor.mode === EDITOR_MODE.Edit ? productToFormValues(editor.item) : undefined}
             onSubmit={saveProduct}
             submitLabel="Save product"
           />
