@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { LangProvider } from './providers/LangProvider/LangProvider';
 import { ThemeProvider } from './providers/ThemeProvider/ThemeProvider';
 import { CartProvider } from '../entities/shop/lib/CartContext';
+import { AccountProvider, useAccount } from './providers/AccountProvider/AccountProvider';
 import { AuthFormConnected } from '../features/forms/AuthForm';
 import { ProductFormConnected } from '../features/forms/ProductForm';
 import { ProfileFormConnected } from '../features/forms/ProfileForm';
+import { UserType } from '../services/account';
 import './styles/themes.css';
 import './App.css';
 import { Header } from '../shared/ui/Header/Header';
@@ -16,6 +18,7 @@ type OpenForm = 'auth' | 'profile' | 'product' | null;
 
 function App() {
   const { t } = useTranslation();
+  const { userType, setUserType } = useAccount();
   const [openForm, setOpenForm] = useState<OpenForm>(null);
 
   const closeForm = () => setOpenForm(null);
@@ -32,6 +35,15 @@ function App() {
             <button className="App-actionBtn" type="button" onClick={() => setOpenForm('profile')}>
               {t('openProfileForm')}
             </button>
+            <label className="App-userTypeSelect">
+              Тип пользователя:{' '}
+              <select value={userType} onChange={(e) => setUserType(e.target.value as UserType)}>
+                <option value={UserType.Standard}>Standard</option>
+                <option value={UserType.Premium}>Premium</option>
+                <option value={UserType.Gold}>Gold</option>
+                <option value={UserType.Free}>Free</option>
+              </select>
+            </label>
           </>
         }
       />
@@ -41,7 +53,11 @@ function App() {
         <section className="App-section">
           <div className="App-sectionHeader">
             <h2 className="App-sectionTitle">{t('productListTitle')}</h2>
-            <button className="App-actionBtn App-actionBtn--primary" type="button" onClick={() => setOpenForm('product')}>
+            <button
+              className="App-actionBtn App-actionBtn--primary"
+              type="button"
+              onClick={() => setOpenForm('product')}
+            >
               {t('openProductForm')}
             </button>
           </div>
@@ -68,9 +84,11 @@ function AppWithProviders() {
   return (
     <ThemeProvider>
       <LangProvider>
-        <CartProvider>
-          <App />
-        </CartProvider>
+        <AccountProvider>
+          <CartProvider>
+            <App />
+          </CartProvider>
+        </AccountProvider>
       </LangProvider>
     </ThemeProvider>
   );

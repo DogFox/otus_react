@@ -63,3 +63,22 @@
 .App-actionBtn--primary:hover {
   filter: brightness(0.95);
 }
+
+.App-userTypeSelect {
+  align-items: center;
+  color: var(--color-text);
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.App-userTypeSelect select {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  padding: 6px 10px;
+}
