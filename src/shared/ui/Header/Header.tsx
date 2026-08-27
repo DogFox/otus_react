@@ -6,11 +6,12 @@ import { ThemeSwitcher } from '../../ThemeSwitcher/ThemeSwitcher';
 import './header.css';
 
 export interface HeaderProps {
+  navigation?: ReactNode;
   title?: string;
   actions?: ReactNode;
 }
 
-export const Header: FC<HeaderProps> = ({ title = 'Dashboard', actions }) => {
+export const Header: FC<HeaderProps> = ({ navigation, title = 'Dashboard', actions }) => {
   const { t } = useTranslation();
 
   return (
@@ -20,6 +21,7 @@ export const Header: FC<HeaderProps> = ({ title = 'Dashboard', actions }) => {
           <Logo text={t('appTitle')} />
           <div className="header__title">{title}</div>
         </div>
+        {navigation ? <nav className="header__nav">{navigation}</nav> : null}
         <div className="header__right">
           {actions}
           <ThemeSwitcher />

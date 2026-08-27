@@ -1,0 +1,20 @@
+.profilePage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profilePage__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profilePage__title {
+  font-size: 28px;
+  margin: 0;
+}
+
+.profilePage__form {
+  max-width: 520px;
+}

@@ -10,6 +10,7 @@ export type ProductFormConnectedProps = {
   className?: string;
   disabled?: boolean;
   initialValues?: ProductFormValues;
+  onSubmit?: (values: ProductFormValues) => void;
   submitLabel?: string;
 };
 
@@ -28,10 +29,17 @@ const isPositiveNumber = (value: string): boolean => {
 };
 
 export const ProductFormConnected = memo<ProductFormConnectedProps>(
-  ({ className, disabled, initialValues = defaultValues, submitLabel = 'Сохранить товар' }) => {
+  ({
+    className,
+    disabled,
+    initialValues = defaultValues,
+    onSubmit: handleExternalSubmit,
+    submitLabel = 'Сохранить товар',
+  }) => {
     const { onSubmit, validate } = useMemo<Pick<FormikConfig<ProductFormValues>, 'onSubmit' | 'validate'>>(
       () => ({
         onSubmit: (values, { resetForm }) => {
+          handleExternalSubmit?.(values);
           console.log('ProductForm submit:', {
             ...values,
             price: Number(values.price),
@@ -67,7 +75,7 @@ export const ProductFormConnected = memo<ProductFormConnectedProps>(
           return errors;
         },
       }),
-      []
+      [handleExternalSubmit]
     );
 
     const formManager = useFormik<ProductFormValues>({

@@ -38,3 +38,48 @@
   gap: 12px;
 }
 
+.header__nav {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.header__navButton {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--color-text-secondary, #334155);
+  cursor: pointer;
+  font: inherit;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.header__navButton:hover {
+  background: var(--color-bg-secondary);
+}
+
+.header__navButton--active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+@media (max-width: 760px) {
+  .header__inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .header__nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .header__right {
+    width: 100%;
+  }
+}

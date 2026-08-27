@@ -1,39 +1,105 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useMemo, useState } from 'react';
+import type { Product } from '../homeworks/ts1/3_write';
+import { createRandomProduct } from '../homeworks/ts1/3_write';
 import { LangProvider } from './providers/LangProvider/LangProvider';
 import { ThemeProvider } from './providers/ThemeProvider/ThemeProvider';
 import { CartProvider } from '../entities/shop/lib/CartContext';
 import { AccountProvider, useAccount } from './providers/AccountProvider/AccountProvider';
-import { AuthFormConnected } from '../features/forms/AuthForm';
 import { ProductFormConnected } from '../features/forms/ProductForm';
-import { ProfileFormConnected } from '../features/forms/ProfileForm';
+import type { ProductFormValues } from '../features/forms/ProductForm/types';
+import { CartPage } from '../pages/CartPage/CartPage';
+import { ProductsPage } from '../pages/ProductsPage/ProductsPage';
+import { ProfilePage } from '../pages/ProfilePage/ProfilePage';
 import { UserType } from '../services/account';
-import './styles/themes.css';
-import './App.css';
 import { Header } from '../shared/ui/Header/Header';
 import { Modal } from '../shared/ui/Modal/Modal';
-import { InfiniteProductList } from '../widgets/ProductList/InfiniteProductList';
+import './styles/themes.css';
+import './App.css';
 
-type OpenForm = 'auth' | 'profile' | 'product' | null;
+type Screen = 'profile' | 'products' | 'cart';
+type EditorState = { mode: 'create' } | { mode: 'edit'; item: Product } | null;
+
+const makeProducts = (): Product[] => {
+  const createdAt = new Date().toISOString();
+  return Array.from({ length: 6 }, () => createRandomProduct(createdAt));
+};
+
+const productToFormValues = (product: Product): ProductFormValues => ({
+  name: product.name,
+  price: String(product.price),
+  oldPrice: product.oldPrice ? String(product.oldPrice) : '',
+  photo: product.photo,
+  desc: product.desc ?? '',
+  category: product.category.name,
+});
 
 function App() {
-  const { t } = useTranslation();
   const { userType, setUserType } = useAccount();
-  const [openForm, setOpenForm] = useState<OpenForm>(null);
+  const [screen, setScreen] = useState<Screen>('products');
+  const [products, setProducts] = useState<Product[]>(makeProducts);
+  const [editor, setEditor] = useState<EditorState>(null);
 
-  const closeForm = () => setOpenForm(null);
+  const closeEditor = () => setEditor(null);
+
+  const saveProduct = (values: ProductFormValues) => {
+    const nextProduct: Product = {
+      id: editor?.mode === 'edit' ? editor.item.id : `${Date.now()}`,
+      name: values.name,
+      photo: values.photo,
+      desc: values.desc,
+      createdAt: editor?.mode === 'edit' ? editor.item.createdAt : new Date().toISOString(),
+      oldPrice: values.oldPrice ? Number(values.oldPrice) : undefined,
+      price: Number(values.price),
+      category: {
+        id: values.category.toLowerCase().replace(/\s+/g, '-'),
+        name: values.category,
+      },
+    };
+
+    setProducts((currentProducts) => {
+      if (editor?.mode === 'edit') {
+        return currentProducts.map((product) => (product.id === editor.item.id ? nextProduct : product));
+      }
+
+      return [nextProduct, ...currentProducts];
+    });
+    closeEditor();
+  };
+
+  const editorTitle = useMemo(() => {
+    if (!editor) {
+      return '';
+    }
+
+    return editor.mode === 'create' ? 'Create product' : 'Edit product';
+  }, [editor]);
 
   return (
     <div className="App">
       <Header
-        title="Homework 7"
-        actions={
+        title="Homework 8"
+        navigation={
           <>
-            <button className="App-actionBtn" type="button" onClick={() => setOpenForm('auth')}>
-              {t('openAuthForm')}
+            <button
+              className={`header__navButton ${screen === 'profile' ? 'header__navButton--active' : ''}`}
+              type="button"
+              onClick={() => setScreen('profile')}
+            >
+              Profile
             </button>
-            <button className="App-actionBtn" type="button" onClick={() => setOpenForm('profile')}>
-              {t('openProfileForm')}
+            <button
+              className={`header__navButton ${screen === 'products' ? 'header__navButton--active' : ''}`}
+              type="button"
+              onClick={() => setScreen('products')}
+            >
+              Products
+            </button>
+            <button
+              className={`header__navButton ${screen === 'cart' ? 'header__navButton--active' : ''}`}
+              type="button"
+              onClick={() => setScreen('cart')}
+            >
+              Cart
             </button>
             <label className="App-userTypeSelect">
               Тип пользователя:{' '}
@@ -48,33 +114,25 @@ function App() {
         }
       />
       <main className="App-main">
-        <p className="App-welcome">{t('welcome')}</p>
-
-        <section className="App-section">
-          <div className="App-sectionHeader">
-            <h2 className="App-sectionTitle">{t('productListTitle')}</h2>
-            <button
-              className="App-actionBtn App-actionBtn--primary"
-              type="button"
-              onClick={() => setOpenForm('product')}
-            >
-              {t('openProductForm')}
-            </button>
-          </div>
-          <InfiniteProductList />
-        </section>
+        {screen === 'profile' ? <ProfilePage /> : null}
+        {screen === 'products' ? (
+          <ProductsPage
+            products={products}
+            onCreateProduct={() => setEditor({ mode: 'create' })}
+            onEditProduct={(product) => setEditor({ mode: 'edit', item: product })}
+          />
+        ) : null}
+        {screen === 'cart' ? <CartPage /> : null}
       </main>
 
-      <Modal visible={openForm === 'auth'} onClose={closeForm} title={t('authFormTitle')}>
-        <AuthFormConnected />
-      </Modal>
-
-      <Modal visible={openForm === 'profile'} onClose={closeForm} title={t('profileFormTitle')}>
-        <ProfileFormConnected />
-      </Modal>
-
-      <Modal visible={openForm === 'product'} onClose={closeForm} title={t('productFormTitle')}>
-        <ProductFormConnected submitLabel={t('productFormSubmit')} />
+      <Modal visible={editor !== null} onClose={closeEditor} title={editorTitle}>
+        {editor ? (
+          <ProductFormConnected
+            initialValues={editor.mode === 'edit' ? productToFormValues(editor.item) : undefined}
+            onSubmit={saveProduct}
+            submitLabel="Save product"
+          />
+        ) : null}
       </Modal>
     </div>
   );

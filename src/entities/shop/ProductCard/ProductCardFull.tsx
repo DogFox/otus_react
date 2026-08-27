@@ -1,4 +1,5 @@
 import React, { type FC } from 'react';
+import type { Product } from '../../../../homeworks/ts1/3_write';
 import { AddToCartButton } from '../../../shared/ui/AddToCartButton/AddToCartButton';
 import { useCart } from '../lib/CartContext';
 import './productCard.css';
@@ -9,7 +10,7 @@ export interface ProductCardFullProps {
   category: string;
   title: string;
   description: string;
-  product: { id: string };
+  product: Product;
 }
 
 export const ProductCardFull: FC<ProductCardFullProps> = ({
