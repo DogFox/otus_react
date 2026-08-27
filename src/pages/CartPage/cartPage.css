@@ -1,0 +1,32 @@
+.cartPage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cartPage__header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.cartPage__title {
+  font-size: 28px;
+  margin: 0;
+}
+
+.cartPage__count {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.cartPage__empty {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text-secondary);
+  padding: 24px;
+  text-align: center;
+}

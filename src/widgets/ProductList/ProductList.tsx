@@ -1,5 +1,5 @@
 import React, { type FC, useMemo } from 'react';
-import type { Product } from '../../../homeworks/ts1/3_write';
+import type { Product } from '../../homeworks/ts1/3_write';
 import { useAccount } from '../../app/providers/AccountProvider/AccountProvider';
 import { applyDiscount, getDiscountedPrice } from '../../entities/account/lib/pricing';
 import { getProductTypeFromCategoryName } from '../../entities/account/lib/productTypeFromCategoryName';

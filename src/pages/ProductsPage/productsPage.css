@@ -1,0 +1,18 @@
+.productsPage {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.productsPage__header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.productsPage__title {
+  font-size: 28px;
+  margin: 0;
+}
