@@ -1,7 +1,8 @@
 import React, { type FC } from 'react';
-import type { Product } from '../../../../homeworks/ts1/3_write';
+import type { Product } from '../../../homeworks/ts1/3_write';
 import { AddToCartButton } from '../../../shared/ui/AddToCartButton/AddToCartButton';
-import { useCart } from '../lib/CartContext';
+import { itemAdded, itemRemoved } from '../../../app/store/cartSlice';
+import { useAppDispatch, useAppSelector } from '../../../app/store';
 import './productCard.css';
 
 export interface ProductCardFullProps {
@@ -11,6 +12,7 @@ export interface ProductCardFullProps {
   title: string;
   description: string;
   product: Product;
+  showRemoveButton?: boolean;
 }
 
 export const ProductCardFull: FC<ProductCardFullProps> = ({
@@ -20,16 +22,19 @@ export const ProductCardFull: FC<ProductCardFullProps> = ({
   title,
   description,
   product,
+  showRemoveButton,
 }) => {
-  const { getQuantityFromMap, addItem, removeItem } = useCart();
-  const cartCount = getQuantityFromMap(product.id);
+  const dispatch = useAppDispatch();
+  const cartCount = useAppSelector(
+    (state) => state.cart.find((item) => item.productId === product.id)?.quantity ?? 0
+  );
 
   const handleAddToCart = () => {
-    addItem(product);
+    dispatch(itemAdded(product.id));
   };
 
   const handleRemoveFromCart = () => {
-    removeItem(product.id);
+    dispatch(itemRemoved(product.id));
   };
 
   return (
@@ -50,7 +55,13 @@ export const ProductCardFull: FC<ProductCardFullProps> = ({
         <div className="productCard__title">{title}</div>
         <div className="productCard__desc">{description}</div>
         <div className="productCard__footer">
-          <AddToCartButton value={cartCount} onAdd={handleAddToCart} onRemove={handleRemoveFromCart} />
+          {showRemoveButton ? (
+            <button className="App-actionBtn" type="button" onClick={handleRemoveFromCart}>
+              Remove
+            </button>
+          ) : (
+            <AddToCartButton value={cartCount} onAdd={handleAddToCart} onRemove={handleRemoveFromCart} />
+          )}
         </div>
       </div>
     </div>

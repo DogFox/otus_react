@@ -82,3 +82,34 @@
   font: inherit;
   padding: 6px 10px;
 }
+
+.App-authActions {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.App-userName {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.App-routeStatus {
+  color: var(--color-text-secondary);
+  padding: 24px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .App-main {
+    padding: 18px 14px;
+  }
+
+  .App-userName {
+    max-width: 120px;
+  }
+}

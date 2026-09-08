@@ -1,42 +1,30 @@
-import React, { useMemo, useState } from 'react';
-import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import type { Product } from '../homeworks/ts1/3_write';
-import { createRandomProduct } from '../homeworks/ts1/3_write';
 import { LangProvider } from './providers/LangProvider/LangProvider';
 import { ThemeProvider } from './providers/ThemeProvider/ThemeProvider';
-import { CartProvider } from '../entities/shop/lib/CartContext';
-import { AccountProvider, useAccount } from './providers/AccountProvider/AccountProvider';
+import { AccountProvider } from './providers/AccountProvider/AccountProvider';
 import { ProductFormConnected } from '../features/forms/ProductForm';
 import type { ProductFormValues } from '../features/forms/ProductForm/types';
 import { CartPage } from '../pages/CartPage/CartPage';
+import { LoginPage } from '../pages/LoginPage/LoginPage';
 import { ProductsPage } from '../pages/ProductsPage/ProductsPage';
 import { ProfilePage } from '../pages/ProfilePage/ProfilePage';
-import { UserType } from '../services/account';
 import { Header } from '../shared/ui/Header/Header';
 import { Modal } from '../shared/ui/Modal/Modal';
+import { AdminRoute, ProtectedRoute } from './routing/ProtectedRoutes';
+import { logout } from './store/authSlice';
+import { productAdded, productUpdated } from './store/productsSlice';
+import { startTokenSynchronization, useAppDispatch, useAppSelector } from './store';
 import './styles/themes.css';
 import './App.css';
 
 const APP_ROUTES = {
   Cart: '/cart',
+  Login: '/login',
   Products: '/products',
   Profile: '/profile',
 } as const;
-
-const EDITOR_MODE = {
-  Create: 'create',
-  Edit: 'edit',
-} as const;
-
-type EditorState =
-  | { mode: typeof EDITOR_MODE.Create }
-  | { mode: typeof EDITOR_MODE.Edit; item: Product }
-  | null;
-
-const makeProducts = (): Product[] => {
-  const createdAt = new Date().toISOString();
-  return Array.from({ length: 6 }, () => createRandomProduct(createdAt));
-};
 
 const productToFormValues = (product: Product): ProductFormValues => ({
   name: product.name,
@@ -47,22 +35,25 @@ const productToFormValues = (product: Product): ProductFormValues => ({
   category: product.category.name,
 });
 
-function App() {
-  const { userType, setUserType } = useAccount();
-  const [products, setProducts] = useState<Product[]>(makeProducts);
-  const [editor, setEditor] = useState<EditorState>(null);
+const ProductEditorModal = () => {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { productId } = useParams();
+  const product = useAppSelector((state) => state.products.find((item) => item.id === productId));
+  const isEditMode = Boolean(productId);
 
-  const closeEditor = () => setEditor(null);
+  if (isEditMode && !product) {
+    return <Navigate to={APP_ROUTES.Products} replace />;
+  }
 
-  const saveProduct = (values: ProductFormValues) => {
-    const isEditMode = editor?.mode === EDITOR_MODE.Edit;
-
+  const close = () => navigate(APP_ROUTES.Products);
+  const save = (values: ProductFormValues) => {
     const nextProduct: Product = {
-      id: isEditMode ? editor.item.id : `${Date.now()}`,
+      id: product?.id ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
       name: values.name,
       photo: values.photo,
       desc: values.desc,
-      createdAt: isEditMode ? editor.item.createdAt : new Date().toISOString(),
+      createdAt: product?.createdAt ?? new Date().toISOString(),
       oldPrice: values.oldPrice ? Number(values.oldPrice) : undefined,
       price: Number(values.price),
       category: {
@@ -71,97 +62,103 @@ function App() {
       },
     };
 
-    setProducts((currentProducts) => {
-      if (isEditMode) {
-        return currentProducts.map((product) => (product.id === editor.item.id ? nextProduct : product));
-      }
-
-      return [nextProduct, ...currentProducts];
-    });
-    closeEditor();
+    dispatch(product ? productUpdated(nextProduct) : productAdded(nextProduct));
+    close();
   };
 
-  const editorTitle = useMemo(() => {
-    if (!editor) {
-      return '';
-    }
+  return (
+    <Modal visible onClose={close} title={product ? 'Edit product' : 'Create product'}>
+      <ProductFormConnected
+        initialValues={product ? productToFormValues(product) : undefined}
+        onSubmit={save}
+        submitLabel="Save product"
+      />
+    </Modal>
+  );
+};
 
-    return editor.mode === EDITOR_MODE.Create ? 'Create product' : 'Edit product';
-  }, [editor]);
+const ProductsRoute = () => {
+  const navigate = useNavigate();
+  const products = useAppSelector((state) => state.products);
+  const isAdmin = useAppSelector((state) => state.auth.profile?.role === 'admin');
+
+  return (
+    <>
+      <ProductsPage
+        products={products}
+        canManage={isAdmin}
+        onCreateProduct={() => navigate('new')}
+        onEditProduct={(product) => navigate(`${product.id}/edit`)}
+      />
+      <Outlet />
+    </>
+  );
+};
+
+function App() {
+  const dispatch = useAppDispatch();
+  const { initialized, profile, token } = useAppSelector((state) => state.auth);
+  const cartCount = useAppSelector((state) => state.cart.reduce((sum, item) => sum + item.quantity, 0));
+
+  useEffect(() => {
+    return startTokenSynchronization();
+  }, []);
 
   return (
     <div className="App">
       <Header
-        title="Homework 8"
+        title="Redux Shop"
         navigation={
           <>
-            <NavLink
-              className={({ isActive }) =>
-                `header__navButton ${isActive ? 'header__navButton--active' : ''}`
-              }
-              to={APP_ROUTES.Profile}
-            >
-              Profile
-            </NavLink>
-            <NavLink
-              className={({ isActive }) =>
-                `header__navButton ${isActive ? 'header__navButton--active' : ''}`
-              }
-              to={APP_ROUTES.Products}
-            >
-              Products
-            </NavLink>
-            <NavLink
-              className={({ isActive }) =>
-                `header__navButton ${isActive ? 'header__navButton--active' : ''}`
-              }
-              to={APP_ROUTES.Cart}
-            >
-              Cart
-            </NavLink>
-            <label className="App-userTypeSelect">
-              Тип пользователя:{' '}
-              <select value={userType} onChange={(e) => setUserType(e.target.value as UserType)}>
-                <option value={UserType.Standard}>Standard</option>
-                <option value={UserType.Premium}>Premium</option>
-                <option value={UserType.Gold}>Gold</option>
-                <option value={UserType.Free}>Free</option>
-              </select>
-            </label>
+            {token ? <NavItem to={APP_ROUTES.Profile}>Profile</NavItem> : null}
+            <NavItem to={APP_ROUTES.Products}>Products</NavItem>
+            <NavItem to={APP_ROUTES.Cart}>Cart ({cartCount})</NavItem>
           </>
+        }
+        actions={
+          initialized && token ? (
+            <div className="App-authActions">
+              <span className="App-userName">{profile?.name}</span>
+              <button className="App-actionBtn" type="button" onClick={() => dispatch(logout())}>
+                Log out
+              </button>
+            </div>
+          ) : (
+            <NavLink className="App-actionBtn" to={APP_ROUTES.Login}>
+              Log in
+            </NavLink>
+          )
         }
       />
       <main className="App-main">
         <Routes>
           <Route path="/" element={<Navigate to={APP_ROUTES.Products} replace />} />
-          <Route path={APP_ROUTES.Profile} element={<ProfilePage />} />
-          <Route
-            path={APP_ROUTES.Products}
-            element={
-              <ProductsPage
-                products={products}
-                onCreateProduct={() => setEditor({ mode: EDITOR_MODE.Create })}
-                onEditProduct={(product) => setEditor({ mode: EDITOR_MODE.Edit, item: product })}
-              />
-            }
-          />
+          <Route path={APP_ROUTES.Login} element={<LoginPage />} />
+          <Route path={APP_ROUTES.Products} element={<ProductsRoute />}>
+            <Route element={<AdminRoute />}>
+              <Route path="new" element={<ProductEditorModal />} />
+              <Route path=":productId/edit" element={<ProductEditorModal />} />
+            </Route>
+          </Route>
           <Route path={APP_ROUTES.Cart} element={<CartPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path={APP_ROUTES.Profile} element={<ProfilePage />} />
+          </Route>
           <Route path="*" element={<Navigate to={APP_ROUTES.Products} replace />} />
         </Routes>
       </main>
-
-      <Modal visible={editor !== null} onClose={closeEditor} title={editorTitle}>
-        {editor ? (
-          <ProductFormConnected
-            initialValues={editor.mode === EDITOR_MODE.Edit ? productToFormValues(editor.item) : undefined}
-            onSubmit={saveProduct}
-            submitLabel="Save product"
-          />
-        ) : null}
-      </Modal>
     </div>
   );
 }
+
+const NavItem = ({ children, to }: { children: React.ReactNode; to: string }) => (
+  <NavLink
+    className={({ isActive }) => `header__navButton ${isActive ? 'header__navButton--active' : ''}`}
+    to={to}
+  >
+    {children}
+  </NavLink>
+);
 
 function AppWithProviders() {
   return (
@@ -169,9 +166,7 @@ function AppWithProviders() {
       <ThemeProvider>
         <LangProvider>
           <AccountProvider>
-            <CartProvider>
-              <App />
-            </CartProvider>
+            <App />
           </AccountProvider>
         </LangProvider>
       </ThemeProvider>

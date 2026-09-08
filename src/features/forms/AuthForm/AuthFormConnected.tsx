@@ -13,6 +13,7 @@ export type AuthFormConnectedProps = {
   disabled?: boolean;
   mode?: AuthMode;
   initialValues?: AuthFormValues;
+  onSubmit?: (values: AuthFormValues) => void | Promise<void>;
 };
 
 const defaultValues: AuthFormValues = {
@@ -22,7 +23,7 @@ const defaultValues: AuthFormValues = {
 };
 
 export const AuthFormConnected = memo<AuthFormConnectedProps>(
-  ({ className, disabled, mode: initialMode = 'login', initialValues = defaultValues }) => {
+  ({ className, disabled, mode: initialMode = 'login', initialValues = defaultValues, onSubmit: handleSubmit }) => {
     const [mode, setMode] = useState<AuthMode>(initialMode);
 
     useEffect(() => {
@@ -31,8 +32,8 @@ export const AuthFormConnected = memo<AuthFormConnectedProps>(
 
     const { onSubmit, validate } = useMemo<Pick<FormikConfig<AuthFormValues>, 'onSubmit' | 'validate'>>(
       () => ({
-        onSubmit: (values, { resetForm }) => {
-          console.log(`AuthForm (${mode}) submit:`, values);
+        onSubmit: async (values, { resetForm }) => {
+          await handleSubmit?.(values);
           resetForm({ values: defaultValues });
         },
         validate: (values) => {
@@ -61,7 +62,7 @@ export const AuthFormConnected = memo<AuthFormConnectedProps>(
           return errors;
         },
       }),
-      [mode]
+      [handleSubmit, mode]
     );
 
     const formManager = useFormik<AuthFormValues>({
