@@ -14,9 +14,10 @@ export interface ProductListProps {
   items: Product[];
   variant?: ProductListVariant;
   onProductClick?: (product: Product) => void;
+  showRemoveButton?: boolean;
 }
 
-export const ProductList: FC<ProductListProps> = ({ items, variant = 'short', onProductClick }) => {
+export const ProductList: FC<ProductListProps> = ({ items, variant = 'short', onProductClick, showRemoveButton }) => {
   const { accountService, userType } = useAccount();
 
   const memoizedItems = useMemo(() => {
@@ -39,11 +40,11 @@ export const ProductList: FC<ProductListProps> = ({ items, variant = 'short', on
       {items.map((product, index) => (
         <li
           key={product.id}
-          className="productList__item productList__item--clickable"
+          className={`productList__item ${onProductClick ? 'productList__item--clickable' : ''}`}
           onClick={() => onProductClick?.(product)}
         >
           {variant === 'full' ? (
-            <ProductCardFull {...memoizedItems[index].fullProps} />
+            <ProductCardFull {...memoizedItems[index].fullProps} showRemoveButton={showRemoveButton} />
           ) : (
             <ProductCardShort {...memoizedItems[index].shortProps} />
           )}
