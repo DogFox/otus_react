@@ -3,6 +3,7 @@ import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux
 import { authReducer, fakeLogin, logout, TOKEN_STORAGE_KEY, tokenSynchronized } from './authSlice';
 import { cartReducer } from './cartSlice';
 import { productsReducer } from './productsSlice';
+import { signupApi } from '../../shared/api/signupApi';
 
 const tokenStorageMiddleware: Middleware = () => (next) => (action) => {
   const result = next(action);
@@ -21,8 +22,9 @@ export const store = configureStore({
     auth: authReducer,
     cart: cartReducer,
     products: productsReducer,
+    [signupApi.reducerPath]: signupApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(tokenStorageMiddleware),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(tokenStorageMiddleware, signupApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
@@ -41,4 +43,3 @@ export const startTokenSynchronization = (): (() => void) => {
   window.addEventListener('storage', handleStorage);
   return () => window.removeEventListener('storage', handleStorage);
 };
-
