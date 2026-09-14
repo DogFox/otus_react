@@ -5,21 +5,24 @@ import './productsPage.css';
 
 export interface ProductsPageProps {
   products: Product[];
+  canManage: boolean;
   onCreateProduct: () => void;
   onEditProduct: (product: Product) => void;
 }
 
-export const ProductsPage: FC<ProductsPageProps> = ({ products, onCreateProduct, onEditProduct }) => {
+export const ProductsPage: FC<ProductsPageProps> = ({ products, canManage, onCreateProduct, onEditProduct }) => {
   return (
     <section className="productsPage">
       <div className="productsPage__header">
         <h1 className="productsPage__title">Products</h1>
-        <button className="App-actionBtn App-actionBtn--primary" type="button" onClick={onCreateProduct}>
-          Add product
-        </button>
+        {canManage ? (
+          <button className="App-actionBtn App-actionBtn--primary" type="button" onClick={onCreateProduct}>
+            Add product
+          </button>
+        ) : null}
       </div>
 
-      <ProductList items={products} variant="short" onProductClick={onEditProduct} />
+      <ProductList items={products} variant="short" onProductClick={canManage ? onEditProduct : undefined} />
     </section>
   );
 };

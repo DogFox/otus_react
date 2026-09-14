@@ -1,0 +1,71 @@
+.signupPage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0 auto;
+  max-width: 520px;
+  width: 100%;
+}
+
+.signupPage__header,
+.signupPage__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signupPage__title {
+  font-size: 28px;
+  margin: 0;
+}
+
+.signupPage__hint {
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.signupPage__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.signupPage__field input {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.signupPage__submit {
+  align-self: flex-start;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  padding: 10px 14px;
+}
+
+.signupPage__submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.signupPage__message {
+  line-height: 1.4;
+  margin: 0;
+}
+
+.signupPage__message--error {
+  color: #b42318;
+}
+
+.signupPage__message--success {
+  color: #087443;
+}
