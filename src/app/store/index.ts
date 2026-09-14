@@ -1,0 +1,45 @@
+import { configureStore, type Middleware } from '@reduxjs/toolkit';
+import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux';
+import { authReducer, authenticate, logout, TOKEN_STORAGE_KEY, tokenSynchronized } from './authSlice';
+import { cartReducer } from './cartSlice';
+import { productsReducer } from './productsSlice';
+import { signupApi } from '../../shared/api/signupApi';
+
+const tokenStorageMiddleware: Middleware = () => (next) => (action) => {
+  const result = next(action);
+
+  if (authenticate.fulfilled.match(action)) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, action.payload.token);
+  } else if (logout.match(action)) {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  }
+
+  return result;
+};
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    cart: cartReducer,
+    products: productsReducer,
+    [signupApi.reducerPath]: signupApi.reducer,
+  },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(tokenStorageMiddleware, signupApi.middleware),
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+export const startTokenSynchronization = (): (() => void) => {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === TOKEN_STORAGE_KEY) {
+      store.dispatch(tokenSynchronized(event.newValue));
+    }
+  };
+
+  window.addEventListener('storage', handleStorage);
+  return () => window.removeEventListener('storage', handleStorage);
+};
