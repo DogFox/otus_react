@@ -1,0 +1,29 @@
+.loginPage {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0 auto;
+  max-width: 520px;
+  width: 100%;
+}
+
+.loginPage__header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loginPage__title {
+  font-size: 28px;
+  margin: 0;
+}
+
+.loginPage__hint {
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.loginPage__form {
+  max-width: 420px;
+}
