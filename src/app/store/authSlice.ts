@@ -41,11 +41,7 @@ const getEmailFromToken = (token: string): string | null => {
   }
 };
 
-const createProfile = (token: string | null): Profile | null => {
-  if (!token) {
-    return null;
-  }
-
+const createProfile = (token: string): Profile | null => {
   const email = getEmailFromToken(token);
   if (!email) {
     return null;
@@ -66,6 +62,12 @@ export const fakeLogin = createAsyncThunk('auth/fakeLogin', async (email: string
 });
 
 const setTokenAndProfile = (state: AuthState, token: string | null) => {
+  if (!token) {
+    state.token = null;
+    state.profile = null;
+    return;
+  }
+
   const profile = createProfile(token);
   state.token = profile ? token : null;
   state.profile = profile;
@@ -109,4 +111,3 @@ const authSlice = createSlice({
 
 export const { initializeApplication, logout, profileUpdated, tokenSynchronized } = authSlice.actions;
 export const authReducer = authSlice.reducer;
-
