@@ -1,113 +1,120 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { getProfile, signIn, signUp, updateProfile, type ServerProfile } from '../../shared/api/rest';
 
 export const TOKEN_STORAGE_KEY = 'otus-shop-token';
-
 export type UserRole = 'admin' | 'user';
-
 export interface Profile {
   email: string;
   name: string;
   about: string;
   role: UserRole;
 }
-
 interface AuthState {
   token: string | null;
   initialized: boolean;
   profile: Profile | null;
   pending: boolean;
+  error: string | null;
 }
+const initialState: AuthState = { token: null, initialized: false, profile: null, pending: false, error: null };
 
-const initialState: AuthState = {
-  token: null,
-  initialized: false,
-  profile: null,
-  pending: false,
-};
-
-const createToken = (email: string): string =>
-  `fake:${encodeURIComponent(email.toLowerCase())}:${Date.now().toString(36)}`;
-
-const getEmailFromToken = (token: string): string | null => {
-  const [prefix, encodedEmail] = token.split(':');
-  if (prefix !== 'fake' || !encodedEmail) {
-    return null;
-  }
-
-  try {
-    return decodeURIComponent(encodedEmail);
-  } catch {
-    return null;
-  }
-};
-
-const createProfile = (token: string): Profile | null => {
-  const email = getEmailFromToken(token);
-  if (!email) {
-    return null;
-  }
-
-  const isAdmin = email === 'admin@example.com';
-  return {
-    email,
-    name: isAdmin ? 'Store administrator' : email.split('@')[0],
-    about: isAdmin ? 'Manages the product catalog.' : 'Shop customer.',
-    role: isAdmin ? 'admin' : 'user',
-  };
-};
-
-export const fakeLogin = createAsyncThunk('auth/fakeLogin', async (email: string) => {
-  await Promise.resolve();
-  return createToken(email);
+const toProfile = (profile: ServerProfile): Profile => ({
+  email: profile.email,
+  name: profile.name || profile.email.split('@')[0],
+  about: '',
+  role: profile.email === 'admin@example.com' ? 'admin' : 'user',
 });
 
-const setTokenAndProfile = (state: AuthState, token: string | null) => {
-  if (!token) {
-    state.token = null;
-    state.profile = null;
-    return;
+export const authenticate = createAsyncThunk(
+  'auth/authenticate',
+  async (credentials: { email: string; password: string; mode: 'signin' | 'signup' }) => {
+    const result =
+      credentials.mode === 'signin'
+        ? await signIn(credentials.email, credentials.password)
+        : await signUp(credentials.email, credentials.password);
+    return { token: result.token, profile: toProfile(await getProfile(result.token)) };
   }
+);
 
-  const profile = createProfile(token);
-  state.token = profile ? token : null;
-  state.profile = profile;
-};
+export const restoreSession = createAsyncThunk('auth/restoreSession', async (token: string, { rejectWithValue }) => {
+  try {
+    return { token, profile: toProfile(await getProfile(token)) };
+  } catch {
+    return rejectWithValue('Session expired. Please sign in again.');
+  }
+});
+
+export const saveProfile = createAsyncThunk(
+  'auth/saveProfile',
+  async (values: Pick<Profile, 'name' | 'about'>, { getState, rejectWithValue }) => {
+    const token = (getState() as { auth: AuthState }).auth.token;
+    if (!token) return rejectWithValue('Please sign in to update your profile.');
+    try {
+      return { ...toProfile(await updateProfile(token, values.name)), about: values.about };
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'Unable to update profile.');
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
     initializeApplication(state, action: PayloadAction<string | null>) {
-      setTokenAndProfile(state, action.payload);
-      state.initialized = true;
+      state.token = action.payload;
+      state.initialized = !action.payload;
     },
     tokenSynchronized(state, action: PayloadAction<string | null>) {
-      setTokenAndProfile(state, action.payload);
-      state.initialized = true;
+      state.token = action.payload;
+      state.profile = null;
+      state.initialized = !action.payload;
     },
     logout(state) {
-      setTokenAndProfile(state, null);
-    },
-    profileUpdated(state, action: PayloadAction<Pick<Profile, 'name' | 'about'>>) {
-      if (state.profile) {
-        state.profile = { ...state.profile, ...action.payload };
-      }
+      state.token = null;
+      state.profile = null;
+      state.error = null;
+      state.initialized = true;
     },
   },
-  extraReducers: (builder) => {
+  extraReducers: (builder) =>
     builder
-      .addCase(fakeLogin.pending, (state) => {
+      .addCase(authenticate.pending, (state) => {
         state.pending = true;
+        state.error = null;
       })
-      .addCase(fakeLogin.fulfilled, (state, action) => {
-        setTokenAndProfile(state, action.payload);
+      .addCase(authenticate.fulfilled, (state, action) => {
         state.pending = false;
+        state.token = action.payload.token;
+        state.profile = action.payload.profile;
+        state.initialized = true;
       })
-      .addCase(fakeLogin.rejected, (state) => {
+      .addCase(authenticate.rejected, (state, action) => {
         state.pending = false;
-      });
-  },
+        state.error = action.error.message ?? 'Authentication failed.';
+      })
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.token = action.payload.token;
+        state.profile = action.payload.profile;
+        state.initialized = true;
+      })
+      .addCase(restoreSession.rejected, (state) => {
+        state.token = null;
+        state.profile = null;
+        state.initialized = true;
+      })
+      .addCase(saveProfile.pending, (state) => {
+        state.pending = true;
+        state.error = null;
+      })
+      .addCase(saveProfile.fulfilled, (state, action) => {
+        state.pending = false;
+        state.profile = action.payload;
+      })
+      .addCase(saveProfile.rejected, (state, action) => {
+        state.pending = false;
+        state.error = String(action.payload ?? action.error.message ?? 'Unable to update profile.');
+      }),
 });
-
-export const { initializeApplication, logout, profileUpdated, tokenSynchronized } = authSlice.actions;
+export const { initializeApplication, logout, tokenSynchronized } = authSlice.actions;
 export const authReducer = authSlice.reducer;

@@ -28,7 +28,7 @@ export const ProductForm = memo<ProductFormProps>(
           name="price"
           title="Цена"
           placeholder="0"
-          type="number"
+          inputMode="decimal"
           required
           onBlur={handleBlur}
           onChange={handleChange}
@@ -42,7 +42,7 @@ export const ProductForm = memo<ProductFormProps>(
           name="oldPrice"
           title="Старая цена"
           placeholder="Необязательно"
-          type="number"
+          inputMode="decimal"
           onBlur={handleBlur}
           onChange={handleChange}
           value={values.oldPrice}
@@ -56,7 +56,6 @@ export const ProductForm = memo<ProductFormProps>(
           title="Фото (URL)"
           placeholder="https://..."
           type="url"
-          required
           onBlur={handleBlur}
           onChange={handleChange}
           value={values.photo}

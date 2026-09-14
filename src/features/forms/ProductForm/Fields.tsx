@@ -21,6 +21,7 @@ type TextFieldProps = FieldBaseProps & {
   placeholder?: string;
   required?: boolean;
   type?: 'text' | 'number' | 'url';
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   autoFocusElement?: ProductFormProps['autoFocusElement'];
 };
 
@@ -32,6 +33,7 @@ export const TextField = memo<TextFieldProps>(
     placeholder,
     required,
     type = 'text',
+    inputMode,
     autoFocusElement,
     onChange,
     onBlur,
@@ -51,6 +53,7 @@ export const TextField = memo<TextFieldProps>(
           disabled={disabled}
           autoFocus={Boolean(autoFocusElement)}
           type={type}
+          inputMode={inputMode}
           name={name}
           onChange={onChange}
           onBlur={onBlur}

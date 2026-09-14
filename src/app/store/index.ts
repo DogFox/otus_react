@@ -1,6 +1,6 @@
 import { configureStore, type Middleware } from '@reduxjs/toolkit';
 import { useDispatch, useSelector, type TypedUseSelectorHook } from 'react-redux';
-import { authReducer, fakeLogin, logout, TOKEN_STORAGE_KEY, tokenSynchronized } from './authSlice';
+import { authReducer, authenticate, logout, TOKEN_STORAGE_KEY, tokenSynchronized } from './authSlice';
 import { cartReducer } from './cartSlice';
 import { productsReducer } from './productsSlice';
 import { signupApi } from '../../shared/api/signupApi';
@@ -8,8 +8,8 @@ import { signupApi } from '../../shared/api/signupApi';
 const tokenStorageMiddleware: Middleware = () => (next) => (action) => {
   const result = next(action);
 
-  if (fakeLogin.fulfilled.match(action)) {
-    localStorage.setItem(TOKEN_STORAGE_KEY, action.payload);
+  if (authenticate.fulfilled.match(action)) {
+    localStorage.setItem(TOKEN_STORAGE_KEY, action.payload.token);
   } else if (logout.match(action)) {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
   }
