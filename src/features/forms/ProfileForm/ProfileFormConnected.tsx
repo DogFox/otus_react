@@ -10,7 +10,7 @@ export type ProfileFormConnectedProps = {
   className?: string;
   disabled?: boolean;
   initialValues?: ProfileFormValues;
-  onSubmit?: (values: ProfileFormValues) => void;
+  onSubmit?: (values: ProfileFormValues) => void | Promise<void>;
 };
 
 const defaultValues: ProfileFormValues = {
@@ -22,8 +22,8 @@ export const ProfileFormConnected = memo<ProfileFormConnectedProps>(
   ({ className, disabled, initialValues = defaultValues, onSubmit: handleSubmit }) => {
     const { onSubmit, validate } = useMemo<Pick<FormikConfig<ProfileFormValues>, 'onSubmit' | 'validate'>>(
       () => ({
-        onSubmit: (values, { resetForm }) => {
-          handleSubmit?.(values);
+        onSubmit: async (values, { resetForm }) => {
+          await handleSubmit?.(values);
           resetForm({ values });
         },
         validate: (values) => {

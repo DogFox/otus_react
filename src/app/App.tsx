@@ -1,5 +1,15 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useNavigate, useParams } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
 import type { Product } from '../homeworks/ts1/3_write';
 import { LangProvider } from './providers/LangProvider/LangProvider';
 import { ThemeProvider } from './providers/ThemeProvider/ThemeProvider';
@@ -7,16 +17,14 @@ import { AccountProvider } from './providers/AccountProvider/AccountProvider';
 import { ProductFormConnected } from '../features/forms/ProductForm';
 import type { ProductFormValues } from '../features/forms/ProductForm/types';
 import { CartPage } from '../pages/CartPage/CartPage';
-import { LoginPage } from '../pages/LoginPage/LoginPage';
 import { ProductsPage } from '../pages/ProductsPage/ProductsPage';
 import { ProfilePage } from '../pages/ProfilePage/ProfilePage';
 import { SignupPage } from '../pages/SignupPage/SignupPage';
-import { SignupRtkQueryPage } from '../pages/SignupRtkQueryPage/SignupRtkQueryPage';
 import { Header } from '../shared/ui/Header/Header';
 import { Modal } from '../shared/ui/Modal/Modal';
-import { AdminRoute, ProtectedRoute } from './routing/ProtectedRoutes';
-import { logout } from './store/authSlice';
-import { productAdded, productUpdated } from './store/productsSlice';
+import { ProtectedRoute } from './routing/ProtectedRoutes';
+import { logout, restoreSession } from './store/authSlice';
+import { loadMoreProducts, refreshProducts, saveProduct } from './store/productsSlice';
 import { startTokenSynchronization, useAppDispatch, useAppSelector } from './store';
 import './styles/themes.css';
 import './App.css';
@@ -24,8 +32,6 @@ import './App.css';
 const APP_ROUTES = {
   Cart: '/cart',
   Login: '/login',
-  SignupFetch: '/signup/fetch',
-  SignupRtkQuery: '/signup/rtk-query',
   Products: '/products',
   Profile: '/profile',
 } as const;
@@ -39,11 +45,13 @@ const productToFormValues = (product: Product): ProductFormValues => ({
   category: product.category.name,
 });
 
+const parsePrice = (value: string): number => Number(value.replace(',', '.'));
+
 const ProductEditorModal = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { productId } = useParams();
-  const product = useAppSelector((state) => state.products.find((item) => item.id === productId));
+  const product = useAppSelector((state) => state.products.items.find((item) => item.id === productId));
   const isEditMode = Boolean(productId);
 
   if (isEditMode && !product) {
@@ -51,22 +59,20 @@ const ProductEditorModal = () => {
   }
 
   const close = () => navigate(APP_ROUTES.Products);
-  const save = (values: ProductFormValues) => {
-    const nextProduct: Product = {
-      id: product?.id ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: values.name,
-      photo: values.photo,
-      desc: values.desc,
-      createdAt: product?.createdAt ?? new Date().toISOString(),
-      oldPrice: values.oldPrice ? Number(values.oldPrice) : undefined,
-      price: Number(values.price),
-      category: {
-        id: values.category.toLowerCase().replace(/\s+/g, '-'),
-        name: values.category,
-      },
-    };
-
-    dispatch(product ? productUpdated(nextProduct) : productAdded(nextProduct));
+  const save = async (values: ProductFormValues) => {
+    await dispatch(
+      saveProduct({
+        id: product?.id,
+        values: {
+          name: values.name,
+          photo: values.photo || undefined,
+          desc: values.desc || undefined,
+          oldPrice: values.oldPrice ? parsePrice(values.oldPrice) : undefined,
+          price: parsePrice(values.price),
+          category: values.category,
+        },
+      })
+    ).unwrap();
     close();
   };
 
@@ -82,17 +88,23 @@ const ProductEditorModal = () => {
 };
 
 const ProductsRoute = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const products = useAppSelector((state) => state.products);
-  const isAdmin = useAppSelector((state) => state.auth.profile?.role === 'admin');
+  const products = useAppSelector((state) => state.products.items);
+  const { loading, error, total } = useAppSelector((state) => state.products);
+  const canManage = useAppSelector((state) => Boolean(state.auth.token));
 
   return (
     <>
       <ProductsPage
         products={products}
-        canManage={isAdmin}
+        canManage={canManage}
         onCreateProduct={() => navigate('new')}
         onEditProduct={(product) => navigate(`${product.id}/edit`)}
+        onLoadMore={() => dispatch(loadMoreProducts())}
+        isLoading={loading}
+        error={error}
+        hasMore={products.length < total}
       />
       <Outlet />
     </>
@@ -101,12 +113,23 @@ const ProductsRoute = () => {
 
 function App() {
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const { initialized, profile, token } = useAppSelector((state) => state.auth);
   const cartCount = useAppSelector((state) => state.cart.reduce((sum, item) => sum + item.quantity, 0));
 
   useEffect(() => {
     return startTokenSynchronization();
   }, []);
+
+  useEffect(() => {
+    if (token && !profile) dispatch(restoreSession(token));
+  }, [dispatch, profile, token]);
+
+  useEffect(() => {
+    if (location.pathname === APP_ROUTES.Products) {
+      dispatch(refreshProducts());
+    }
+  }, [dispatch, location.pathname, token]);
 
   return (
     <div className="App">
@@ -117,8 +140,6 @@ function App() {
             {token ? <NavItem to={APP_ROUTES.Profile}>Profile</NavItem> : null}
             <NavItem to={APP_ROUTES.Products}>Products</NavItem>
             <NavItem to={APP_ROUTES.Cart}>Cart ({cartCount})</NavItem>
-            <NavItem to={APP_ROUTES.SignupFetch}>Sign up (fetch)</NavItem>
-            <NavItem to={APP_ROUTES.SignupRtkQuery}>Sign up (RTK Query)</NavItem>
           </>
         }
         actions={
@@ -139,11 +160,9 @@ function App() {
       <main className="App-main">
         <Routes>
           <Route path="/" element={<Navigate to={APP_ROUTES.Products} replace />} />
-          <Route path={APP_ROUTES.Login} element={<LoginPage />} />
-          <Route path={APP_ROUTES.SignupFetch} element={<SignupPage />} />
-          <Route path={APP_ROUTES.SignupRtkQuery} element={<SignupRtkQueryPage />} />
+          <Route path={APP_ROUTES.Login} element={<SignupPage />} />
           <Route path={APP_ROUTES.Products} element={<ProductsRoute />}>
-            <Route element={<AdminRoute />}>
+            <Route element={<ProtectedRoute />}>
               <Route path="new" element={<ProductEditorModal />} />
               <Route path=":productId/edit" element={<ProductEditorModal />} />
             </Route>
@@ -160,10 +179,7 @@ function App() {
 }
 
 const NavItem = ({ children, to }: { children: React.ReactNode; to: string }) => (
-  <NavLink
-    className={({ isActive }) => `header__navButton ${isActive ? 'header__navButton--active' : ''}`}
-    to={to}
-  >
+  <NavLink className={({ isActive }) => `header__navButton ${isActive ? 'header__navButton--active' : ''}`} to={to}>
     {children}
   </NavLink>
 );
