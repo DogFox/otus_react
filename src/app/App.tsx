@@ -10,6 +10,8 @@ import { CartPage } from '../pages/CartPage/CartPage';
 import { LoginPage } from '../pages/LoginPage/LoginPage';
 import { ProductsPage } from '../pages/ProductsPage/ProductsPage';
 import { ProfilePage } from '../pages/ProfilePage/ProfilePage';
+import { SignupPage } from '../pages/SignupPage/SignupPage';
+import { SignupRtkQueryPage } from '../pages/SignupRtkQueryPage/SignupRtkQueryPage';
 import { Header } from '../shared/ui/Header/Header';
 import { Modal } from '../shared/ui/Modal/Modal';
 import { AdminRoute, ProtectedRoute } from './routing/ProtectedRoutes';
@@ -22,6 +24,8 @@ import './App.css';
 const APP_ROUTES = {
   Cart: '/cart',
   Login: '/login',
+  SignupFetch: '/signup/fetch',
+  SignupRtkQuery: '/signup/rtk-query',
   Products: '/products',
   Profile: '/profile',
 } as const;
@@ -113,6 +117,8 @@ function App() {
             {token ? <NavItem to={APP_ROUTES.Profile}>Profile</NavItem> : null}
             <NavItem to={APP_ROUTES.Products}>Products</NavItem>
             <NavItem to={APP_ROUTES.Cart}>Cart ({cartCount})</NavItem>
+            <NavItem to={APP_ROUTES.SignupFetch}>Sign up (fetch)</NavItem>
+            <NavItem to={APP_ROUTES.SignupRtkQuery}>Sign up (RTK Query)</NavItem>
           </>
         }
         actions={
@@ -134,6 +140,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to={APP_ROUTES.Products} replace />} />
           <Route path={APP_ROUTES.Login} element={<LoginPage />} />
+          <Route path={APP_ROUTES.SignupFetch} element={<SignupPage />} />
+          <Route path={APP_ROUTES.SignupRtkQuery} element={<SignupRtkQueryPage />} />
           <Route path={APP_ROUTES.Products} element={<ProductsRoute />}>
             <Route element={<AdminRoute />}>
               <Route path="new" element={<ProductEditorModal />} />
